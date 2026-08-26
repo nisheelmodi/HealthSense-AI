@@ -148,7 +148,12 @@ export default function AssessmentWizard() {
     };
 
     try {
-      const response = await fetch('/api/predict', {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const endpoint = baseUrl ? `${baseUrl}/predict` : '/api/predict';
+
+      console.log('Sending prediction request to:', endpoint);
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,6 +167,7 @@ export default function AssessmentWizard() {
 
         try {
           const errorBody = await response.json();
+          console.error('Backend returned an error:', response.status, errorBody);
 
           if (response.status === 422) {
             // Backend validation_errors is { detail: { validation_errors: string[] } }
@@ -175,8 +181,12 @@ export default function AssessmentWizard() {
             }
           } else if (response.status === 503) {
             friendlyMessage = 'The prediction service is temporarily unavailable. Please try again in a moment.';
+          } else {
+            friendlyMessage = `Server error ${response.status}: ${JSON.stringify(errorBody)}`;
           }
-        } catch {
+        } catch (jsonErr) {
+          console.error('Failed to parse error response:', response.status, jsonErr);
+          friendlyMessage = `Server error ${response.status}. Could not read error details.`;
           // JSON parse failed — keep the default friendly message
         }
 
@@ -188,9 +198,10 @@ export default function AssessmentWizard() {
       let resultData;
       try {
         resultData = await response.json();
-      } catch {
+      } catch (parseErr) {
+        console.error('Failed to parse successful response:', parseErr);
         setIsLoading(false);
-        setSubmissionError('The server returned an unexpected response. Please try again.');
+        setSubmissionError('The server returned an unexpected response format. Please try again.');
         return;
       }
 
@@ -202,11 +213,12 @@ export default function AssessmentWizard() {
       setTimeout(() => {
         router.push('/result');
       }, 1000);
-    } catch {
+    } catch (err) {
+      console.error('Network or fetch error in AssessmentWizard:', err);
       // Network failure or backend unreachable
       setIsLoading(false);
       setSubmissionError(
-        'Unable to reach the assessment service. Please check your connection and try again.'
+        `Unable to reach the assessment service. Error: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   };
