@@ -12,8 +12,6 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend/ ./backend/
 COPY ml/models/ ./ml/models/
 
-# Hugging Face Spaces exposes port 7860
-EXPOSE 7860
-
+# The application port is provided by the environment (e.g., PORT variable on Render)
 # Run the FastAPI app
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["python", "-m", "backend.main"]
