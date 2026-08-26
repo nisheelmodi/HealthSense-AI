@@ -1,0 +1,17 @@
+# HealthSense AI — ML Phase Requirements
+# These packages are used ONLY for data exploration, preprocessing, and model training.
+# Do NOT modify backend/requirements.txt for these ML-only dependencies.
+
+# Core data manipulation
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Machine learning
+scikit-learn>=1.3.0
+
+# Serialization (save/load trained models)
+joblib>=1.3.0
+
+# Visualization (for EDA and reporting)
+matplotlib>=3.7.0
+seaborn>=0.12.0
